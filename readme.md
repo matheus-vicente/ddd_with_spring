@@ -1,6 +1,6 @@
-# Javagas Estacionamento
+# Javagas
 
-Aplicação de TDD e DDD em uma api de controle de vagas em um estacionamento, com Spring.
+Javagas é uma api REST de controle de um estacionamento, construído utilizando os conceitos de DDD (Domain-Driven Design).
 
 ## Todo
 
