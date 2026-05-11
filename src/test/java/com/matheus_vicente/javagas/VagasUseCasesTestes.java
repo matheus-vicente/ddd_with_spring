@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -16,6 +17,7 @@ import com.matheus_vicente.javagas.application.use_cases.AtualizarInfosVagaUseCa
 import com.matheus_vicente.javagas.application.use_cases.CriarVagaUseCase;
 import com.matheus_vicente.javagas.application.use_cases.DeletarVagasUseCase;
 import com.matheus_vicente.javagas.application.use_cases.LiberarVagaUseCase;
+import com.matheus_vicente.javagas.application.use_cases.ListarVagasUseCase;
 import com.matheus_vicente.javagas.application.use_cases.OcuparVagaUseCase;
 import com.matheus_vicente.javagas.domain.entities.TipoVaga;
 import com.matheus_vicente.javagas.domain.entities.Vaga;
@@ -23,6 +25,7 @@ import com.matheus_vicente.javagas.domain.exceptions.UseCaseException;
 import com.matheus_vicente.javagas.domain.exceptions.entities.CodigoEmUsoException;
 import com.matheus_vicente.javagas.domain.exceptions.entities.VagaNaoEncontradaException;
 import com.matheus_vicente.javagas.domain.repositories.VagasRepository;
+import com.matheus_vicente.javagas.domain.shared.Paginavel;
 import com.matheus_vicente.javagas.infra.dtos.InfosVagaDTO;
 import com.matheus_vicente.javagas.repositories.InMemoryVagasRepository;
 
@@ -35,6 +38,7 @@ class VagasUseCasesTestes {
     private OcuparVagaUseCase ocuparVagaUseCase;
     private LiberarVagaUseCase liberarVagaUseCase;
     private DeletarVagasUseCase deletarVagasUseCase;
+    private ListarVagasUseCase listarVagasUseCase;
 
     @BeforeEach
     void init() {
@@ -45,6 +49,7 @@ class VagasUseCasesTestes {
         ocuparVagaUseCase = new OcuparVagaUseCase(repository);
         liberarVagaUseCase = new LiberarVagaUseCase(repository);
         deletarVagasUseCase = new DeletarVagasUseCase(repository);
+        listarVagasUseCase = new ListarVagasUseCase(repository);
     }
 
 	@Test
@@ -166,5 +171,29 @@ class VagasUseCasesTestes {
         ocuparVagaUseCase.execute(vaga.getId().toString());
 
         assertThrows(UseCaseException.class, () -> deletarVagasUseCase.execute(vaga.getId().toString()));
+    }
+
+    @Test
+    @DisplayName("Deve ser possível listar todas as vagas")
+    void listarVagas() {
+        criarVagaUseCase.execute(
+            new InfosVagaDTO("A01", TipoVaga.PADRAO.name())
+        );
+
+        criarVagaUseCase.execute(
+            new InfosVagaDTO("A02", TipoVaga.PADRAO.name())
+        );
+
+        criarVagaUseCase.execute(
+            new InfosVagaDTO("A03", TipoVaga.PADRAO.name())
+        );
+
+        criarVagaUseCase.execute(
+            new InfosVagaDTO("A04", TipoVaga.PADRAO.name())
+        );
+
+        List<Vaga> vagas = listarVagasUseCase.execute(Paginavel.primeira()).getItens();
+
+        assertEquals(4, vagas.size());
     }
 }

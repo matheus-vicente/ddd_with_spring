@@ -7,9 +7,43 @@ import java.util.UUID;
 
 import com.matheus_vicente.javagas.domain.entities.Vaga;
 import com.matheus_vicente.javagas.domain.repositories.VagasRepository;
+import com.matheus_vicente.javagas.domain.shared.Pagina;
+import com.matheus_vicente.javagas.domain.shared.Paginavel;
 
 public class InMemoryVagasRepository implements VagasRepository {
     private List<Vaga> vagas = new ArrayList<>();
+
+    @Override
+    public Pagina<Vaga> listar(Paginavel paginavel) {
+        int total = vagas.size();
+        int primeiroIndex = paginavel.getOffset();
+
+        if (primeiroIndex >= total) {
+            return new Pagina<Vaga>(
+                new ArrayList<>(),
+                0,
+                paginavel.pagina(),
+                paginavel.tamanhoDaPagina()
+            );
+        }
+
+        int ultimoIndex = 0;
+
+        if (total < paginavel.tamanhoDaPagina()) {
+            ultimoIndex = total;
+        } else {
+            ultimoIndex = Math.min(primeiroIndex + paginavel.tamanhoDaPagina(), primeiroIndex);
+        }
+
+        List<Vaga> vagasSublist = vagas.subList(primeiroIndex, ultimoIndex);
+
+        return new Pagina<Vaga>(
+            vagasSublist,
+            total,
+            paginavel.pagina(),
+            paginavel.tamanhoDaPagina()
+        );
+    }
 
     @Override
     public Optional<Vaga> buscarPorId(UUID id) {
