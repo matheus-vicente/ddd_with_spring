@@ -10,10 +10,10 @@ Javagas é uma api REST de controle de um estacionamento, construído utilizando
 - [x] Usuário pode criar vagas.
   - [x] Uma vaga não pode ter código repetido.
 - [x] Usuário pode editar vagas.
-  - [ ] Editar código e tipo.
+  - [x] Editar código e tipo.
 - [ ] Usuário pode deletar vagas.
 - [ ] Deve ser possível listar as vagas.
-- [ ] Usuáio pode criar tickets.
+- [ ] Usuário pode criar tickets.
 - [ ] Deve ser gerado um código aleatório e único para um Ticket.
 - [ ] Um Ticket nunca deve ter código repetido.
 - [ ] As formas de tarifa devem ser as seguintes:

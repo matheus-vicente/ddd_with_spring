@@ -3,6 +3,8 @@ package com.matheus_vicente.javagas;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.UUID;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,6 +15,7 @@ import com.matheus_vicente.javagas.application.use_cases.CriarVagaUseCase;
 import com.matheus_vicente.javagas.domain.entities.TipoVaga;
 import com.matheus_vicente.javagas.domain.entities.Vaga;
 import com.matheus_vicente.javagas.domain.exceptions.entities.CodigoEmUsoException;
+import com.matheus_vicente.javagas.domain.exceptions.entities.VagaNaoEncontradaException;
 import com.matheus_vicente.javagas.domain.repositories.VagasRepository;
 import com.matheus_vicente.javagas.infra.dtos.InfosVagaDTO;
 import com.matheus_vicente.javagas.repositories.InMemoryVagasRepository;
@@ -57,7 +60,8 @@ class VagasUseCasesTestes {
     }
 
     @Test
-    void editarVaga() {
+    @DisplayName("Deve ser possível atualizar uma vaga")
+    void atualizarVaga() {
         Vaga vaga = criarVagaUseCase.execute(
             new InfosVagaDTO("A01", TipoVaga.PADRAO.name())
         );
@@ -66,5 +70,35 @@ class VagasUseCasesTestes {
             vaga.getId().toString(),
             new InfosVagaDTO("A02", TipoVaga.PADRAO.name())
         ).getCodigo());
+    }
+
+    @Test
+    @DisplayName("Não deve ser possível atualizar uma vaga caso não haja um ID válido")
+    void atualizarVagaComIdInexistente() {
+        assertThrows(VagaNaoEncontradaException.class, () -> atualizarInfosVagaUseCase.execute(
+            UUID.randomUUID().toString(),
+            new InfosVagaDTO("A01", TipoVaga.PADRAO.name())
+        ));
+    }
+
+    @Test
+    @DisplayName("Não deve ser possível atualizar uma vaga com mesmo nome")
+    void atualizarVagaComMesmoNome() {
+        criarVagaUseCase.execute(
+            new InfosVagaDTO("A01", TipoVaga.PADRAO.name())
+        );
+
+        Vaga vaga = criarVagaUseCase.execute(
+            new InfosVagaDTO("A02", TipoVaga.PADRAO.name())
+        );
+
+        assertThrows(CodigoEmUsoException.class, () -> atualizarInfosVagaUseCase.execute(
+            vaga.getId().toString(),
+            new InfosVagaDTO("A01", TipoVaga.PADRAO.name())
+        ));
+    }
+
+    @Test
+    void deletarVaga() {
     }
 }

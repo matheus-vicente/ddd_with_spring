@@ -46,5 +46,8 @@ public class InMemoryVagasRepository implements VagasRepository {
 
     @Override
     public void deletar(UUID id) {
+        this.vagas.removeIf(
+            (item) -> item.getId().equals(id)
+        );
     }
 }
