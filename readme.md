@@ -4,7 +4,7 @@ Aplicação de TDD e DDD em uma api de controle de vagas em um estacionamento, c
 
 ## Todo
 
-- [ ] Vagas devem conter: id, código, tipo e disponibilidade.
+- [x] Vagas devem conter: id, código, tipo e disponibilidade.
 - [ ] Ticket deve conter: id, código, status, placa, tarifa, valor e data de criação.
   - [ ] O Status deve ser: pendente, pago ou cancelado.
 - [ ] As formas de tarifa devem ser as seguintes:
