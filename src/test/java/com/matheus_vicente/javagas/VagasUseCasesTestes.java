@@ -11,7 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import com.matheus_vicente.javagas.application.use_cases.CriarVagaUseCase;
 import com.matheus_vicente.javagas.domain.entities.TipoVaga;
 import com.matheus_vicente.javagas.domain.entities.Vaga;
-import com.matheus_vicente.javagas.domain.exceptions.CodigoEmUsoException;
+import com.matheus_vicente.javagas.domain.exceptions.entities.CodigoEmUsoException;
 import com.matheus_vicente.javagas.domain.repositories.VagasRepository;
 import com.matheus_vicente.javagas.infra.dtos.CriarVagaDTO;
 import com.matheus_vicente.javagas.repositories.InMemoryVagasRepository;

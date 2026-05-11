@@ -20,7 +20,7 @@ public class Vaga {
         this.disponivel = disponivel;
     }
 
-    static Vaga create(String codigo, TipoVaga tipo) {
+    public static Vaga create(String codigo, TipoVaga tipo) {
         UUID id = UUID.randomUUID();
 
         return new Vaga(id, codigo, tipo, true);
