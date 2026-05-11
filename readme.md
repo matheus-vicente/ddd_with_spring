@@ -12,8 +12,8 @@ Aplicação de TDD e DDD em uma api de controle de vagas em um estacionamento, c
   - [ ] Diária
   - [ ] Mensal
   - [ ] Permanencia mínima
-- [ ] Usuário pode criar vagas.
-  - [ ] Uma vaga não pode ter código repetido.
+- [x] Usuário pode criar vagas.
+  - [x] Uma vaga não pode ter código repetido.
 - [ ] Usuário pode editar vagas.
 - [ ] Usuário pode deletar vagas.
 - [ ] Deve ser possível listar as vagas.
