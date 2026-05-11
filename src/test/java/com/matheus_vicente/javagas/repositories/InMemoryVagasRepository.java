@@ -31,6 +31,10 @@ public class InMemoryVagasRepository implements VagasRepository {
 
     @Override
     public Vaga salvar(Vaga vaga) {
+        this.vagas.removeIf(
+            (item) -> item.getId().equals(vaga.getId())
+        );
+
         this.vagas.add(vaga);
 
         Optional<Vaga> vagaRetorno = this.vagas.stream().filter(
@@ -38,11 +42,6 @@ public class InMemoryVagasRepository implements VagasRepository {
         ).findFirst();
 
         return vagaRetorno.get();
-    }
-
-    @Override
-    public Optional<Vaga> editar(Vaga vaga) {
-        return null;
     }
 
     @Override

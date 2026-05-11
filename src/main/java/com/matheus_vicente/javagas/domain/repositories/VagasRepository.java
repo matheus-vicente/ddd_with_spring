@@ -9,6 +9,5 @@ public interface VagasRepository {
     Optional<Vaga> buscarPorId(UUID id);
     Optional<Vaga> buscarPorCodigo(String codigo);
     Vaga salvar(Vaga vaga);
-    Optional<Vaga> editar(Vaga vaga);
     void deletar(UUID id);
 }
