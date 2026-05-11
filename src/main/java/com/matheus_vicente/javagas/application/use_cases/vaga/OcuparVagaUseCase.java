@@ -1,4 +1,4 @@
-package com.matheus_vicente.javagas.application.use_cases;
+package com.matheus_vicente.javagas.application.use_cases.vaga;
 
 import java.util.UUID;
 
@@ -6,10 +6,10 @@ import com.matheus_vicente.javagas.domain.entities.Vaga;
 import com.matheus_vicente.javagas.domain.exceptions.entities.VagaNaoEncontradaException;
 import com.matheus_vicente.javagas.domain.repositories.VagasRepository;
 
-public class LiberarVagaUseCase {
+public class OcuparVagaUseCase {
     private VagasRepository repository;
 
-    public LiberarVagaUseCase(VagasRepository repository) {
+    public OcuparVagaUseCase(VagasRepository repository) {
         this.repository = repository;
     }
 
@@ -18,7 +18,7 @@ public class LiberarVagaUseCase {
             () -> new VagaNaoEncontradaException()
         );
 
-        vagaParaEditar.liberar();
+        vagaParaEditar.ocupar();
 
         Vaga vaga = this.repository.salvar(vagaParaEditar);
 

@@ -1,4 +1,4 @@
-package com.matheus_vicente.javagas.application.use_cases;
+package com.matheus_vicente.javagas.application.use_cases.vaga;
 
 import com.matheus_vicente.javagas.domain.entities.TipoVaga;
 import com.matheus_vicente.javagas.domain.entities.Vaga;

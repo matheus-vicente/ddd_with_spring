@@ -13,12 +13,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import com.matheus_vicente.javagas.application.use_cases.AtualizarInfosVagaUseCase;
-import com.matheus_vicente.javagas.application.use_cases.CriarVagaUseCase;
-import com.matheus_vicente.javagas.application.use_cases.DeletarVagasUseCase;
-import com.matheus_vicente.javagas.application.use_cases.LiberarVagaUseCase;
-import com.matheus_vicente.javagas.application.use_cases.ListarVagasUseCase;
-import com.matheus_vicente.javagas.application.use_cases.OcuparVagaUseCase;
+import com.matheus_vicente.javagas.application.use_cases.vaga.AtualizarInfosVagaUseCase;
+import com.matheus_vicente.javagas.application.use_cases.vaga.CriarVagaUseCase;
+import com.matheus_vicente.javagas.application.use_cases.vaga.DeletarVagasUseCase;
+import com.matheus_vicente.javagas.application.use_cases.vaga.LiberarVagaUseCase;
+import com.matheus_vicente.javagas.application.use_cases.vaga.ListarVagasUseCase;
+import com.matheus_vicente.javagas.application.use_cases.vaga.OcuparVagaUseCase;
 import com.matheus_vicente.javagas.domain.entities.TipoVaga;
 import com.matheus_vicente.javagas.domain.entities.Vaga;
 import com.matheus_vicente.javagas.domain.exceptions.UseCaseException;
