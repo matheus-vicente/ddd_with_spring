@@ -1,4 +1,4 @@
-package com.matheus_vicente.javagas.application.use_cases.vaga;
+package com.matheus_vicente.javagas.application.use_cases;
 
 import com.matheus_vicente.javagas.domain.entities.Vaga;
 import com.matheus_vicente.javagas.domain.repositories.VagasRepository;

@@ -1,4 +1,4 @@
-package com.matheus_vicente.javagas.application.use_cases.vaga;
+package com.matheus_vicente.javagas.application.use_cases;
 
 import java.util.UUID;
 
