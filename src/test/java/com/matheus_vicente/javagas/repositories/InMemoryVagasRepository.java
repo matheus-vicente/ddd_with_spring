@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import com.matheus_vicente.javagas.domain.entities.Vaga;
+import com.matheus_vicente.javagas.domain.entities.vaga.Vaga;
 import com.matheus_vicente.javagas.domain.repositories.VagasRepository;
 import com.matheus_vicente.javagas.domain.shared.Pagina;
 import com.matheus_vicente.javagas.domain.shared.Paginavel;

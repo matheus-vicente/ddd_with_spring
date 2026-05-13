@@ -1,4 +1,4 @@
-package com.matheus_vicente.javagas.infra.dtos;
+package com.matheus_vicente.javagas.application.dtos;
 
 public record InfosVagaDTO(
     String codigo,

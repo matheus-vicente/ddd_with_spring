@@ -1,4 +1,4 @@
-package com.matheus_vicente.javagas.domain.entities;
+package com.matheus_vicente.javagas.domain.entities.vaga;
 
 import java.util.UUID;
 

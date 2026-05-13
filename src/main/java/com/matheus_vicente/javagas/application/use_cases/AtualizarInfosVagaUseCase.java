@@ -2,12 +2,12 @@ package com.matheus_vicente.javagas.application.use_cases;
 
 import java.util.UUID;
 
-import com.matheus_vicente.javagas.domain.entities.TipoVaga;
-import com.matheus_vicente.javagas.domain.entities.Vaga;
+import com.matheus_vicente.javagas.application.dtos.InfosVagaDTO;
+import com.matheus_vicente.javagas.domain.entities.vaga.TipoVaga;
+import com.matheus_vicente.javagas.domain.entities.vaga.Vaga;
 import com.matheus_vicente.javagas.domain.exceptions.entities.CodigoEmUsoException;
 import com.matheus_vicente.javagas.domain.exceptions.entities.VagaNaoEncontradaException;
 import com.matheus_vicente.javagas.domain.repositories.VagasRepository;
-import com.matheus_vicente.javagas.infra.dtos.InfosVagaDTO;
 
 public class AtualizarInfosVagaUseCase {
     private VagasRepository repository;
