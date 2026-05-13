@@ -7,8 +7,6 @@ import java.util.UUID;
 import com.matheus_vicente.javagas.application.dtos.InfosTicketDTO;
 import com.matheus_vicente.javagas.domain.entities.ticket.Ticket;
 import com.matheus_vicente.javagas.domain.entities.vaga.Vaga;
-import com.matheus_vicente.javagas.domain.entities.values_objects.tarifa.Tarifa;
-import com.matheus_vicente.javagas.domain.exceptions.UseCaseException;
 import com.matheus_vicente.javagas.domain.exceptions.entities.VagaNaoEncontradaException;
 import com.matheus_vicente.javagas.domain.repositories.GeradorDeCodigoTicket;
 import com.matheus_vicente.javagas.domain.repositories.TicketsRepository;
@@ -47,20 +45,13 @@ public class GerarTicketUseCase {
 
         vaga.ocupar();
 
-        Tarifa tarifa = switch (ticketDTO.tipo()) {
-            case DIARIA -> Tarifa.fromDiaria(ticketDTO.valor());
-            case MENSAL -> Tarifa.fromMensal(ticketDTO.valor());
-            case PRIMEIRA_HORA_MAIS_HORA_ADICIONAL -> Tarifa.fromHoraAdicional(
-                ticketDTO.valor(), ticketDTO.valorAdicional()
-            );
-            default -> throw new UseCaseException("Informe uma tarifa válida");
-        };
-
         Ticket ticket = Ticket.create(
             gerador,
             vaga.getId(),
             ticketDTO.placa(),
-            tarifa,
+            ticketDTO.tipo(),
+            ticketDTO.valor(),
+            ticketDTO.valorAdicional(),
             LocalDateTime.now(clock)
         );
 

@@ -24,11 +24,19 @@ public class Vaga {
             throw new DomainException("O campo CÓDIGO não pode ser nulo");
         }
 
-        
         this.id = id;
         this.codigo = codigo;
         this.tipo = (tipo == null) ? TipoVaga.PADRAO : tipo;
         this.disponivel = disponivel;
+    }
+
+    public static Vaga rehydrate(
+        UUID id,
+        String codigo,
+        TipoVaga tipo,
+        boolean disponivel
+    ) {
+        return new Vaga(id, codigo, tipo, disponivel);
     }
 
     public static Vaga create(String codigo, TipoVaga tipo) {

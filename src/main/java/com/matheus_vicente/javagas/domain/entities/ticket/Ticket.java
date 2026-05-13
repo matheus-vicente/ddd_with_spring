@@ -8,6 +8,7 @@ import java.util.UUID;
 import com.matheus_vicente.javagas.domain.entities.values_objects.CodigoTicket;
 import com.matheus_vicente.javagas.domain.entities.values_objects.Placa;
 import com.matheus_vicente.javagas.domain.entities.values_objects.tarifa.Tarifa;
+import com.matheus_vicente.javagas.domain.entities.values_objects.tarifa.TipoTarifa;
 import com.matheus_vicente.javagas.domain.exceptions.DomainException;
 import com.matheus_vicente.javagas.domain.repositories.GeradorDeCodigoTicket;
 
@@ -76,7 +77,9 @@ public class Ticket {
         GeradorDeCodigoTicket gerador,
         UUID vagaId,
         String placa,
-        Tarifa tarifa,
+        TipoTarifa tarifaTipo,
+        BigDecimal tarifaValor,
+        BigDecimal tarifaValorAdicional,
         LocalDateTime criadoEm
     ) {
         if (criadoEm.isAfter(LocalDateTime.now())) {
@@ -88,6 +91,16 @@ public class Ticket {
         StatusTicket status = StatusTicket.PENDENTE;
         Placa placaVO = new Placa(placa);
 
+        Tarifa tarifa = switch (tarifaTipo) {
+            case DIARIA -> Tarifa.fromDiaria(tarifaValor);
+            case MENSAL -> Tarifa.fromMensal(tarifaValor);
+            case PRIMEIRA_HORA_MAIS_HORA_ADICIONAL -> Tarifa.fromHoraAdicional(
+                tarifaValor,
+                tarifaValorAdicional
+            );
+            default -> throw new DomainException("Informe uma tarifa válida");
+        };
+
         return new Ticket(
             id,
             codigo,
@@ -98,6 +111,42 @@ public class Ticket {
             BigDecimal.ZERO,
             criadoEm,
             null
+        );
+    }
+
+    public static Ticket rehydrate(
+        UUID id,
+        String codigo,
+        UUID vagaId,
+        StatusTicket status,
+        String placa,
+        TipoTarifa tarifaTipo,
+        BigDecimal tarifaValor,
+        BigDecimal tarifaValorAdicional,
+        BigDecimal valor,
+        LocalDateTime criadoEm,
+        LocalDateTime dataDeSaida
+    ) {
+        Tarifa tarifa = switch (tarifaTipo) {
+            case DIARIA -> Tarifa.fromDiaria(tarifaValor);
+            case MENSAL -> Tarifa.fromMensal(tarifaValor);
+            case PRIMEIRA_HORA_MAIS_HORA_ADICIONAL -> Tarifa.fromHoraAdicional(
+                tarifaValor,
+                tarifaValorAdicional
+            );
+            default -> throw new DomainException("Erro ao reidratar Tarifa");
+        };
+
+        return new Ticket(
+            id,
+            new CodigoTicket(codigo),
+            vagaId,
+            status,
+            new Placa(placa),
+            tarifa,
+            valor,
+            criadoEm,
+            dataDeSaida
         );
     }
 

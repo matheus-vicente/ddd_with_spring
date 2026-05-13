@@ -67,7 +67,7 @@ public class Tarifa {
 
     public BigDecimal getValorAdicional() {
         if (!tipo.equals(TipoTarifa.PRIMEIRA_HORA_MAIS_HORA_ADICIONAL)) {
-            throw new DomainException("Tarifa precisa ser do tipo: " + TipoTarifa.PRIMEIRA_HORA_MAIS_HORA_ADICIONAL.name());
+            return null;
         }
 
         return valorAdicional;

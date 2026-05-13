@@ -1,11 +1,5 @@
 package com.matheus_vicente.javagas;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Clock;
@@ -14,11 +8,22 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 
-import org.junit.jupiter.api.BeforeEach;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.transaction.annotation.Transactional;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import com.matheus_vicente.javagas.application.dtos.InfosTicketDTO;
 import com.matheus_vicente.javagas.application.dtos.InfosVagaDTO;
@@ -45,52 +50,48 @@ import com.matheus_vicente.javagas.domain.repositories.GeradorDeCodigoTicket;
 import com.matheus_vicente.javagas.domain.repositories.TicketsRepository;
 import com.matheus_vicente.javagas.domain.repositories.VagasRepository;
 import com.matheus_vicente.javagas.domain.shared.Paginavel;
-import com.matheus_vicente.javagas.repositories.InMemoryTicketsRepository;
-import com.matheus_vicente.javagas.repositories.InMemoryVagasRepository;
 
-@ExtendWith(MockitoExtension.class)
-class UseCasesTestes {
-    private TicketsRepository ticketsRepository;    
-    private VagasRepository vagasRepository;
-    private GeradorDeCodigoTicket gerador;
-    private CalcularTarifa calcularTarifa;
+@SpringBootTest
+@Testcontainers
+@Transactional
+public class JpaIntegrationTests {
+    @Container
+    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:16-alpine");
 
-    private CriarVagaUseCase criarVagaUseCase;
-    private AtualizarInfosVagaUseCase atualizarInfosVagaUseCase;
-    private DeletarVagasUseCase deletarVagasUseCase;
-    private ListarVagasUseCase listarVagasUseCase;
-
-    private GerarTicketUseCase gerarTicketUseCase;
-    private CancelarTicketUseCase cancelarTicketUseCase;
-    private FecharTicketUseCase fecharTicketUseCase;
-
-    @BeforeEach
-    void init() {
-        vagasRepository = new InMemoryVagasRepository();
-        ticketsRepository = new InMemoryTicketsRepository();
-
-        gerador = new GeradorDeCodigoTicketImpl();
-        calcularTarifa = new CalcularTarifaImpl();
-
-        criarVagaUseCase = new CriarVagaUseCase(vagasRepository);
-        atualizarInfosVagaUseCase = new AtualizarInfosVagaUseCase(vagasRepository);
-        deletarVagasUseCase = new DeletarVagasUseCase(vagasRepository);
-        listarVagasUseCase = new ListarVagasUseCase(vagasRepository);
+    @DynamicPropertySource
+    static void configureProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", postgres::getJdbcUrl);
+        registry.add("spring.datasource.username", postgres::getUsername);
+        registry.add("spring.datasource.password", postgres::getPassword);
+        registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
     }
 
-	@Test
+    @Autowired
+    private VagasRepository vagasRepository;
+
+    @Autowired
+    private TicketsRepository ticketsRepository;
+
+    private GeradorDeCodigoTicket gerador = new GeradorDeCodigoTicketImpl();
+    private CalcularTarifa calcularTarifa = new CalcularTarifaImpl();
+
+    @Test
     @DisplayName("Deve ser possível criar uma vaga")
-	void criarVaga() {
+    void criarVaga() {
+        CriarVagaUseCase criarVagaUseCase = new CriarVagaUseCase(vagasRepository);
+
         Vaga vaga = criarVagaUseCase.execute(
             new InfosVagaDTO("A01", TipoVaga.PADRAO.name())
         );
 
-        assertEquals("A01", vaga.getCodigo());
-	}
+        assertEquals("A01", vagasRepository.buscarPorId(vaga.getId()).get().getCodigo());
+    }
 
     @Test
     @DisplayName("Deve retornar uma exceção ao tentar criar uma vaga com mesmo código")
     void criarVagaComMesmoCodigo() {
+        CriarVagaUseCase criarVagaUseCase = new CriarVagaUseCase(vagasRepository);
+
         criarVagaUseCase.execute(
             new InfosVagaDTO("A01", TipoVaga.PADRAO.name())
         );
@@ -105,6 +106,9 @@ class UseCasesTestes {
     @Test
     @DisplayName("Deve ser possível atualizar uma vaga")
     void atualizarVaga() {
+        CriarVagaUseCase criarVagaUseCase = new CriarVagaUseCase(vagasRepository);
+        AtualizarInfosVagaUseCase atualizarInfosVagaUseCase = new AtualizarInfosVagaUseCase(vagasRepository);
+
         Vaga vaga = criarVagaUseCase.execute(
             new InfosVagaDTO("A01", TipoVaga.PADRAO.name())
         );
@@ -115,9 +119,12 @@ class UseCasesTestes {
         ).getCodigo());
     }
 
-    @Test
+     @Test
     @DisplayName("Não deve ser possível atualizar uma vaga caso não haja um ID válido")
     void atualizarVagaComIdInexistente() {
+        CriarVagaUseCase criarVagaUseCase = new CriarVagaUseCase(vagasRepository);
+        AtualizarInfosVagaUseCase atualizarInfosVagaUseCase = new AtualizarInfosVagaUseCase(vagasRepository);
+
         Vaga vaga = criarVagaUseCase.execute(
             new InfosVagaDTO("A01", TipoVaga.PADRAO.name())
         );
@@ -133,6 +140,9 @@ class UseCasesTestes {
     @Test
     @DisplayName("Não deve ser possível atualizar uma vaga com mesmo nome")
     void atualizarVagaComMesmoNome() {
+        CriarVagaUseCase criarVagaUseCase = new CriarVagaUseCase(vagasRepository);
+        AtualizarInfosVagaUseCase atualizarInfosVagaUseCase = new AtualizarInfosVagaUseCase(vagasRepository);
+
         criarVagaUseCase.execute(
             new InfosVagaDTO("A01", TipoVaga.PADRAO.name())
         );
@@ -150,6 +160,9 @@ class UseCasesTestes {
     @Test
     @DisplayName("Deve ser possível deletar uma vaga")
     void deletarVaga() {
+        CriarVagaUseCase criarVagaUseCase = new CriarVagaUseCase(vagasRepository);
+        DeletarVagasUseCase deletarVagasUseCase = new DeletarVagasUseCase(vagasRepository);
+
         Vaga vaga = criarVagaUseCase.execute(
             new InfosVagaDTO("A01", TipoVaga.PADRAO.name())
         );
@@ -164,6 +177,9 @@ class UseCasesTestes {
     @Test
     @DisplayName("Não deve ser possível deletar uma vaga com ID inválido")
     void deletarVagaComIdInexistente() {
+        CriarVagaUseCase criarVagaUseCase = new CriarVagaUseCase(vagasRepository);
+        DeletarVagasUseCase deletarVagasUseCase = new DeletarVagasUseCase(vagasRepository);
+
         Vaga vaga = criarVagaUseCase.execute(
             new InfosVagaDTO("A01", TipoVaga.PADRAO.name())
         );
@@ -176,6 +192,9 @@ class UseCasesTestes {
     @Test
     @DisplayName("Deve ser possível listar todas as vagas")
     void listarVagas() {
+        CriarVagaUseCase criarVagaUseCase = new CriarVagaUseCase(vagasRepository);
+        ListarVagasUseCase listarVagasUseCase = new ListarVagasUseCase(vagasRepository);
+
         criarVagaUseCase.execute(
             new InfosVagaDTO("A01", TipoVaga.PADRAO.name())
         );
@@ -200,11 +219,13 @@ class UseCasesTestes {
     @Test
     @DisplayName("Deve ser possível gerar um Ticket com Status PENDENTE e ocupar a vaga corespondente ao Ticket")
     void gerarTicket() {
+        CriarVagaUseCase criarVagaUseCase = new CriarVagaUseCase(vagasRepository);
+
         Vaga vaga = criarVagaUseCase.execute(
             new InfosVagaDTO("A01", TipoVaga.PADRAO.name())
         );
 
-        gerarTicketUseCase = new GerarTicketUseCase(
+        GerarTicketUseCase gerarTicketUseCase = new GerarTicketUseCase(
             vagasRepository,
             ticketsRepository,
             gerador,
@@ -231,7 +252,7 @@ class UseCasesTestes {
         Instant instanteDataDeEntrada = Instant.parse("2026-05-12T12:00:00Z");
         Clock clockDataDeEntrada = Clock.fixed(instanteDataDeEntrada, ZoneId.systemDefault());
 
-        gerarTicketUseCase = new GerarTicketUseCase(
+        GerarTicketUseCase gerarTicketUseCase = new GerarTicketUseCase(
             vagasRepository,
             ticketsRepository,
             gerador,
@@ -262,6 +283,8 @@ class UseCasesTestes {
     @Test
     @DisplayName("Não deve ser possível gerar um Ticket para uma vaga que já está ocupada")
     void gerarTicketParaVagaOcupada() {
+        CriarVagaUseCase criarVagaUseCase = new CriarVagaUseCase(vagasRepository);
+
         Vaga vaga = criarVagaUseCase.execute(
             new InfosVagaDTO("A01", TipoVaga.PADRAO.name())
         );
@@ -269,7 +292,7 @@ class UseCasesTestes {
         Instant instanteDataDeEntrada = Instant.parse("2026-05-12T12:00:00Z");
         Clock clockDataDeEntrada = Clock.fixed(instanteDataDeEntrada, ZoneId.systemDefault());
 
-        gerarTicketUseCase = new GerarTicketUseCase(
+        GerarTicketUseCase gerarTicketUseCase = new GerarTicketUseCase(
             vagasRepository,
             ticketsRepository,
             gerador,
@@ -302,6 +325,9 @@ class UseCasesTestes {
     @Test
     @DisplayName("Não deve ser possível deletar uma vaga que está ocupada")
     void deletarVagaOcupada() {
+        CriarVagaUseCase criarVagaUseCase = new CriarVagaUseCase(vagasRepository);
+        DeletarVagasUseCase deletarVagasUseCase = new DeletarVagasUseCase(vagasRepository);
+
         Vaga vaga = criarVagaUseCase.execute(
             new InfosVagaDTO("A01", TipoVaga.PADRAO.name())
         );
@@ -309,7 +335,7 @@ class UseCasesTestes {
         Instant instanteDataDeEntrada = Instant.parse("2026-05-12T12:00:00Z");
         Clock clockDataDeEntrada = Clock.fixed(instanteDataDeEntrada, ZoneId.systemDefault());
 
-        gerarTicketUseCase = new GerarTicketUseCase(
+        GerarTicketUseCase gerarTicketUseCase = new GerarTicketUseCase(
             vagasRepository,
             ticketsRepository,
             gerador,
@@ -334,6 +360,8 @@ class UseCasesTestes {
     @Test
     @DisplayName("Deve ser possível cancelar um Ticket")
     void cancelarTicket() {
+        CriarVagaUseCase criarVagaUseCase = new CriarVagaUseCase(vagasRepository);
+
         Vaga vaga = criarVagaUseCase.execute(
             new InfosVagaDTO("A01", TipoVaga.PADRAO.name())
         );
@@ -341,7 +369,7 @@ class UseCasesTestes {
         Instant instanteDataDeEntrada = Instant.parse("2026-05-12T12:00:00Z");
         Clock clockDataDeEntrada = Clock.fixed(instanteDataDeEntrada, ZoneId.systemDefault());
 
-        gerarTicketUseCase = new GerarTicketUseCase(
+        GerarTicketUseCase gerarTicketUseCase = new GerarTicketUseCase(
             vagasRepository,
             ticketsRepository,
             gerador,
@@ -361,7 +389,7 @@ class UseCasesTestes {
         Instant instanteDataDeCancelamento = Instant.parse("2026-05-12T12:00:00Z");
         Clock clockDataDeCancelamento = Clock.fixed(instanteDataDeCancelamento, ZoneId.systemDefault());
 
-        cancelarTicketUseCase = new CancelarTicketUseCase(
+        CancelarTicketUseCase cancelarTicketUseCase = new CancelarTicketUseCase(
             vagasRepository,
             ticketsRepository,
             clockDataDeCancelamento
@@ -376,6 +404,8 @@ class UseCasesTestes {
     @Test
     @DisplayName("Deve ser possível fechar um Ticket onde o status se torna PAGO e desocupar a vaga correspondente")
     void fecharTicket() {
+        CriarVagaUseCase criarVagaUseCase = new CriarVagaUseCase(vagasRepository);
+
         Vaga vaga = criarVagaUseCase.execute(
             new InfosVagaDTO("A01", TipoVaga.PADRAO.name())
         );
@@ -383,7 +413,7 @@ class UseCasesTestes {
         Instant instanteDataDeEntrada = Instant.parse("2026-05-12T12:00:00Z");
         Clock clockDataDeEntrada = Clock.fixed(instanteDataDeEntrada, ZoneId.systemDefault());
 
-        gerarTicketUseCase = new GerarTicketUseCase(
+        GerarTicketUseCase gerarTicketUseCase = new GerarTicketUseCase(
             vagasRepository,
             ticketsRepository,
             gerador,
@@ -403,7 +433,7 @@ class UseCasesTestes {
         Instant instanteDataDeSaida = Instant.parse("2026-05-12T12:00:00Z");
         Clock clockDataDeSaida = Clock.fixed(instanteDataDeSaida, ZoneId.systemDefault());
 
-        fecharTicketUseCase = new FecharTicketUseCase(
+        FecharTicketUseCase fecharTicketUseCase = new FecharTicketUseCase(
             vagasRepository,
             ticketsRepository,
             calcularTarifa,
@@ -419,6 +449,8 @@ class UseCasesTestes {
     @Test
     @DisplayName("Deve ser possível fechar um Ticket com valor correto, para todas as tarifas")
     void fecharTicketEmDiferentesTarifas() {
+        CriarVagaUseCase criarVagaUseCase = new CriarVagaUseCase(vagasRepository);
+
         Vaga vaga = criarVagaUseCase.execute(
             new InfosVagaDTO("A01", TipoVaga.PADRAO.name())
         );
@@ -429,7 +461,7 @@ class UseCasesTestes {
                 Instant instanteDataDeEntrada = Instant.parse("2026-05-12T12:00:00Z");
                 Clock clockDataDeEntrada = Clock.fixed(instanteDataDeEntrada, ZoneId.systemDefault());
 
-                gerarTicketUseCase = new GerarTicketUseCase(
+                GerarTicketUseCase gerarTicketUseCase = new GerarTicketUseCase(
                     vagasRepository,
                     ticketsRepository,
                     gerador,
@@ -449,7 +481,7 @@ class UseCasesTestes {
                 Instant instanteDataDeSaida = Instant.parse("2026-05-12T18:00:00Z");
                 Clock clockDataDeSaida = Clock.fixed(instanteDataDeSaida, ZoneId.systemDefault());
 
-                fecharTicketUseCase = new FecharTicketUseCase(
+                FecharTicketUseCase fecharTicketUseCase = new FecharTicketUseCase(
                     vagasRepository,
                     ticketsRepository,
                     calcularTarifa,
@@ -472,7 +504,7 @@ class UseCasesTestes {
                 Instant instanteDataDeEntrada = Instant.parse("2026-05-12T12:00:00Z");
                 Clock clockDataDeEntrada = Clock.fixed(instanteDataDeEntrada, ZoneId.systemDefault());
 
-                gerarTicketUseCase = new GerarTicketUseCase(
+                GerarTicketUseCase gerarTicketUseCase = new GerarTicketUseCase(
                     vagasRepository,
                     ticketsRepository,
                     gerador,
@@ -492,7 +524,7 @@ class UseCasesTestes {
                 Instant instanteDataDeSaida = Instant.parse("2026-05-12T18:30:00Z");
                 Clock clockDataDeSaida = Clock.fixed(instanteDataDeSaida, ZoneId.systemDefault());
 
-                fecharTicketUseCase = new FecharTicketUseCase(
+                FecharTicketUseCase fecharTicketUseCase = new FecharTicketUseCase(
                     vagasRepository,
                     ticketsRepository,
                     calcularTarifa,
@@ -515,7 +547,7 @@ class UseCasesTestes {
                 Instant instanteDataDeEntrada = Instant.parse("2026-05-12T12:00:00Z");
                 Clock clockDataDeEntrada = Clock.fixed(instanteDataDeEntrada, ZoneId.systemDefault());
 
-                gerarTicketUseCase = new GerarTicketUseCase(
+                GerarTicketUseCase gerarTicketUseCase = new GerarTicketUseCase(
                     vagasRepository,
                     ticketsRepository,
                     gerador,
@@ -535,7 +567,7 @@ class UseCasesTestes {
                 Instant instanteDataDeSaida = Instant.parse("2026-05-12T12:30:00Z");
                 Clock clockDataDeSaida = Clock.fixed(instanteDataDeSaida, ZoneId.systemDefault());
 
-                fecharTicketUseCase = new FecharTicketUseCase(
+                FecharTicketUseCase fecharTicketUseCase = new FecharTicketUseCase(
                     vagasRepository,
                     ticketsRepository,
                     calcularTarifa,
@@ -558,7 +590,7 @@ class UseCasesTestes {
                 Instant instanteDataDeEntrada = Instant.parse("2026-05-12T12:00:00Z");
                 Clock clockDataDeEntrada = Clock.fixed(instanteDataDeEntrada, ZoneId.systemDefault());
 
-                gerarTicketUseCase = new GerarTicketUseCase(
+                GerarTicketUseCase gerarTicketUseCase = new GerarTicketUseCase(
                     vagasRepository,
                     ticketsRepository,
                     gerador,
@@ -578,7 +610,7 @@ class UseCasesTestes {
                 Instant instanteDataDeSaida = Instant.parse("2026-05-12T12:14:00Z");
                 Clock clockDataDeSaida = Clock.fixed(instanteDataDeSaida, ZoneId.systemDefault());
 
-                fecharTicketUseCase = new FecharTicketUseCase(
+                FecharTicketUseCase fecharTicketUseCase = new FecharTicketUseCase(
                     vagasRepository,
                     ticketsRepository,
                     calcularTarifa,
@@ -599,6 +631,8 @@ class UseCasesTestes {
     @Test
     @DisplayName("Não deve ser possível fechar um Ticket que não esteja pendente")
     void fecharTicketPago() {
+        CriarVagaUseCase criarVagaUseCase = new CriarVagaUseCase(vagasRepository);
+
         Vaga vaga = criarVagaUseCase.execute(
             new InfosVagaDTO("A01", TipoVaga.PADRAO.name())
         );
@@ -606,7 +640,7 @@ class UseCasesTestes {
         Instant instanteDataDeEntrada = Instant.parse("2026-05-12T12:00:00Z");
         Clock clockDataDeEntrada = Clock.fixed(instanteDataDeEntrada, ZoneId.systemDefault());
 
-        gerarTicketUseCase = new GerarTicketUseCase(
+        GerarTicketUseCase gerarTicketUseCase = new GerarTicketUseCase(
             vagasRepository,
             ticketsRepository,
             gerador,
@@ -626,7 +660,7 @@ class UseCasesTestes {
         Instant instanteDataDeSaida = Instant.parse("2026-05-12T18:00:00Z");
         Clock clockDataDeSaida = Clock.fixed(instanteDataDeSaida, ZoneId.systemDefault());
 
-        fecharTicketUseCase = new FecharTicketUseCase(
+        FecharTicketUseCase fecharTicketUseCase = new FecharTicketUseCase(
             vagasRepository,
             ticketsRepository,
             calcularTarifa,
@@ -641,6 +675,8 @@ class UseCasesTestes {
     @Test
     @DisplayName("Não deve ser possível cancelar um Ticket que já está pago ou cancelado")
     void cancelarTicketPagoCancelado() {
+        CriarVagaUseCase criarVagaUseCase = new CriarVagaUseCase(vagasRepository);
+
         Vaga vaga = criarVagaUseCase.execute(
             new InfosVagaDTO("A01", TipoVaga.PADRAO.name())
         );
@@ -648,7 +684,7 @@ class UseCasesTestes {
         Instant instanteDataDeEntrada = Instant.parse("2026-05-12T12:00:00Z");
         Clock clockDataDeEntrada = Clock.fixed(instanteDataDeEntrada, ZoneId.systemDefault());
 
-        gerarTicketUseCase = new GerarTicketUseCase(
+        GerarTicketUseCase gerarTicketUseCase = new GerarTicketUseCase(
             vagasRepository,
             ticketsRepository,
             gerador,
@@ -658,14 +694,14 @@ class UseCasesTestes {
         Instant instanteDataDeCancelamento = Instant.parse("2026-05-12T12:00:00Z");
         Clock clockDataDeCancelamento = Clock.fixed(instanteDataDeCancelamento, ZoneId.systemDefault());
 
-        fecharTicketUseCase = new FecharTicketUseCase(
+        FecharTicketUseCase fecharTicketUseCase = new FecharTicketUseCase(
             vagasRepository,
             ticketsRepository,
             calcularTarifa,
             clockDataDeCancelamento
         );
 
-        cancelarTicketUseCase = new CancelarTicketUseCase(
+        CancelarTicketUseCase cancelarTicketUseCase = new CancelarTicketUseCase(
             vagasRepository,
             ticketsRepository,
             clockDataDeCancelamento
