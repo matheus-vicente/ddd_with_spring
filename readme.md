@@ -62,12 +62,17 @@ Para garantir a confiabilidade, o projeto utiliza **Testcontainers** para subir 
 ### Vagas
 
 > POST /v1/vagas - Cadastra uma nova vaga.
+
 > GET /v1/vagas - Lista todas as vagas paginadas.
+
 > PUT /v1/vagas/{id} - Altera as informações de `código` e `tipo`.
+
 > DELETE /v1/vagas/{id} - Deleta uma vaga
 
 ### Tickets
 
 > POST /v1/tickets/gerar-ticket/{vagaId} - Gera um ticket de entrada para um veículo.
+
 > PUT /v1/tickets/cancelar-ticket/{id} - Cancela um ticket.
+
 > PUT /v1/tickets/deletar-ticket/{id} - Deleta um ticket.
