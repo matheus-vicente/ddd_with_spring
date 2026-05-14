@@ -60,7 +60,7 @@ public class JpaVagasRepositoryAdapter implements VagasRepository {
 
         return new Pagina<>(
             vagas,
-            jpaVagas.getSize(),
+            (int) jpaVagas.getTotalElements(),
             paginavel.pagina(),
             paginavel.tamanhoDaPagina()
         );

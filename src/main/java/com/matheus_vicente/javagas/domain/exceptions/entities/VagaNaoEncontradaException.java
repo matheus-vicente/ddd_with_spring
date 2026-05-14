@@ -1,6 +1,8 @@
 package com.matheus_vicente.javagas.domain.exceptions.entities;
 
-public class VagaNaoEncontradaException extends RuntimeException {
+import com.matheus_vicente.javagas.domain.exceptions.EntidadeNaoEncontradaException;
+
+public class VagaNaoEncontradaException extends EntidadeNaoEncontradaException {
     public VagaNaoEncontradaException() {
         super("Vaga não encontrada");
     }

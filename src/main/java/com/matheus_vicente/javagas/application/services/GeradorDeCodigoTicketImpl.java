@@ -4,8 +4,11 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import org.springframework.stereotype.Service;
+
 import com.matheus_vicente.javagas.domain.repositories.GeradorDeCodigoTicket;
 
+@Service
 public class GeradorDeCodigoTicketImpl implements GeradorDeCodigoTicket {
     private static final SecureRandom RANDOM = new SecureRandom();
     private static final String CARACTERES_VALIDOS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";

@@ -17,15 +17,17 @@ public class AtualizarInfosVagaUseCase {
     }
 
     public Vaga execute(String id, InfosVagaDTO vagaDTO) {
-        boolean vagaComMesmoCodigo = this.repository.buscarPorCodigo(vagaDTO.codigo()).isPresent();
-
-        if (vagaComMesmoCodigo) {
-            throw new CodigoEmUsoException(vagaDTO.codigo());
-        }
-
         Vaga vagaParaAtualizar = this.repository.buscarPorId(UUID.fromString(id)).orElseThrow(
             () -> new VagaNaoEncontradaException()
         );
+
+        if (!vagaParaAtualizar.getCodigo().equals(vagaDTO.codigo())) {
+            boolean vagaComMesmoCodigo = this.repository.buscarPorCodigo(vagaDTO.codigo()).isPresent();
+    
+            if (vagaComMesmoCodigo) {
+                throw new CodigoEmUsoException(vagaDTO.codigo());
+            }
+        }
 
         vagaParaAtualizar.atualizarInfos(
             vagaDTO.codigo(),

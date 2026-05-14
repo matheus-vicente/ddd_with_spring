@@ -4,10 +4,13 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
+import org.springframework.stereotype.Service;
+
 import com.matheus_vicente.javagas.domain.entities.ticket.Ticket;
 import com.matheus_vicente.javagas.domain.entities.values_objects.tarifa.Tarifa;
 import com.matheus_vicente.javagas.domain.repositories.CalcularTarifa;
 
+@Service
 public class CalcularTarifaImpl implements CalcularTarifa {
     @Override
     public BigDecimal calcular(Ticket ticket, LocalDateTime saida) {
